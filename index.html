@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Remindly – Never Miss Anything</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --black:#0a0a0a;--black2:#111111;--black3:#1a1a1a;--black4:#222222;--black5:#2a2a2a;
+  --white:#ffffff;--white2:#f5f5f5;--white3:#e8e8e8;
+  --grey:#888888;--grey2:#555555;--grey3:#333333;
+  --accent:#f5c842;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:400;overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+.cursor{width:10px;height:10px;border-radius:50%;background:var(--white);position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .15s,height .15s;}
+.cursor-ring{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,0.3);position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .16s ease-out;}
+
+/* NOISE */
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");opacity:.5;}
+
+/* GRID */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:72px 72px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 60px;background:rgba(10,10,10,0.82);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.nav-logo{display:flex;align-items:center;gap:11px;text-decoration:none;}
+.nav-logo-box{width:34px;height:34px;border-radius:9px;background:var(--white);color:var(--black);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:1.1rem;font-weight:900;}
+.nav-logo span{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--white);}
+.nav-links{display:flex;gap:38px;list-style:none;}
+.nav-links a{color:var(--grey);text-decoration:none;font-size:0.84rem;font-weight:500;letter-spacing:.4px;transition:color .2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{background:var(--white);color:var(--black);border:none;padding:9px 22px;border-radius:999px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.84rem;cursor:pointer;transition:background .2s,transform .2s;text-decoration:none;}
+.nav-cta:hover{background:var(--white2);transform:translateY(-1px);}
+
+/* HERO */
+.hero{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;padding:0 60px;max-width:1280px;margin:0 auto;gap:60px;}
+.hero-left{flex:1;padding-top:60px;}
+.hero-right{flex:1;display:flex;justify-content:flex-end;align-items:center;padding-top:60px;}
+
+.eyebrow-row{display:flex;align-items:center;gap:12px;margin-bottom:26px;}
+.ey-line{width:36px;height:1px;background:var(--grey3);}
+.ey-text{font-size:0.72rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--grey);}
+.ey-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.6s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.15;}}
+
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(3.8rem,6.5vw,7rem);line-height:.94;letter-spacing:-2px;margin-bottom:30px;}
+.h1-solid{color:var(--white);display:block;}
+.h1-outline{color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,0.28);font-style:italic;display:block;}
+.hero-desc{color:var(--grey);font-size:.97rem;line-height:1.75;max-width:400px;margin-bottom:40px;}
+
+.hero-btns{display:flex;gap:12px;margin-bottom:52px;}
+.btn-w{background:var(--white);color:var(--black);padding:13px 30px;border-radius:999px;border:none;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;text-decoration:none;display:inline-block;transition:transform .2s,box-shadow .2s;}
+.btn-w:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,.1);}
+.btn-g{color:var(--grey);border:1px solid var(--border2);padding:13px 30px;border-radius:999px;background:transparent;font-family:'DM Sans',sans-serif;font-weight:500;font-size:.88rem;cursor:pointer;text-decoration:none;display:inline-block;transition:border-color .2s,color .2s;}
+.btn-g:hover{border-color:rgba(255,255,255,.28);color:var(--white);}
+
+/* PILL ROW */
+.pill-row{display:flex;flex-wrap:wrap;gap:9px;}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:999px;font-size:.8rem;font-weight:500;border:1px solid var(--border2);background:var(--black3);color:rgba(255,255,255,.7);transition:border-color .2s,transform .2s,background .2s;}
+.pill:hover{border-color:rgba(255,255,255,.22);background:var(--black4);transform:translateY(-2px);}
+.pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* HERO CARD */
+.hero-card-wrap{position:relative;}
+.hero-card{width:400px;background:var(--black3);border:1px solid var(--border2);border-radius:28px;overflow:hidden;box-shadow:0 60px 100px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.04);animation:cardFloat 5s ease-in-out infinite;}
+@keyframes cardFloat{0%,100%{transform:translateY(0) rotate(-.4deg);}50%{transform:translateY(-16px) rotate(.4deg);}}
+.card-header{padding:26px 26px 18px;border-bottom:1px solid var(--border);}
+.card-lbl{font-size:.68rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--grey);margin-bottom:14px;}
+.card-title{font-family:'DM Serif Display',serif;font-size:1.35rem;color:var(--white);margin-bottom:3px;}
+.card-sub{font-size:.78rem;color:var(--grey);}
+.card-body{padding:4px 0;}
+.card-item{display:flex;align-items:center;gap:14px;padding:14px 26px;border-bottom:1px solid var(--border);transition:background .2s;}
+.card-item:last-child{border-bottom:none;}
+.card-item:hover{background:var(--black4);}
+.ci-icon{width:34px;height:34px;border-radius:10px;background:var(--black4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.ci-text{flex:1;}
+.ci-name{font-size:.86rem;font-weight:500;color:var(--white);margin-bottom:2px;}
+.ci-meta{font-size:.73rem;color:var(--grey);}
+.ci-check{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.68rem;}
+.ci-check.done{background:var(--white);border-color:var(--white);color:var(--black);font-weight:700;}
+.card-glow{position:absolute;bottom:-50px;left:50%;transform:translateX(-50%);width:180px;height:180px;border-radius:50%;background:rgba(245,200,66,.05);filter:blur(50px);pointer-events:none;}
+
+/* Floating elements */
+.notif{position:absolute;top:-18px;right:-14px;background:var(--white);color:var(--black);border-radius:14px;padding:9px 14px;font-size:.76rem;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.5);white-space:nowrap;animation:popIn .4s .5s cubic-bezier(.34,1.56,.64,1) both;}
+.notif::after{content:'';position:absolute;bottom:-6px;left:16px;width:12px;height:12px;background:var(--white);clip-path:polygon(0 0,100% 0,0 100%);}
+.float-badge{position:absolute;bottom:-18px;left:-18px;background:var(--black4);border:1px solid var(--border2);border-radius:14px;padding:11px 16px;box-shadow:0 8px 28px rgba(0,0,0,.5);animation:popIn .4s .9s cubic-bezier(.34,1.56,.64,1) both;}
+.fb-num{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--white);line-height:1;}
+.fb-lbl{font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);}
+@keyframes popIn{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+.star{position:absolute;color:var(--accent);animation:twinkle 2.5s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.25;transform:scale(.6);}}
+
+/* MARQUEE */
+.marquee-wrap{position:relative;z-index:2;overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--black2);padding:14px 0;}
+.marquee-inner{display:flex;white-space:nowrap;animation:scroll 20s linear infinite;width:max-content;}
+@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.m-item{display:inline-flex;align-items:center;gap:14px;padding:0 36px;font-size:.74rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--grey3);}
+.m-sep{color:var(--accent);font-size:.65rem;}
+
+/* STATS */
+.stats-strip{position:relative;z-index:2;display:flex;justify-content:center;max-width:1280px;margin:0 auto;gap:0;}
+.stat-item{flex:1;text-align:center;padding:48px 20px;border-right:1px solid var(--border);}
+.stat-item:last-child{border-right:none;}
+.stat-val{font-family:'DM Serif Display',serif;font-size:3.2rem;color:var(--white);margin-bottom:8px;line-height:1;}
+.stat-lbl{font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--grey2);}
+
+/* SECTIONS */
+section{position:relative;z-index:2;}
+.section-inner{max-width:1280px;margin:0 auto;padding:96px 60px;}
+.ey-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.ey-num{font-family:'DM Serif Display',serif;font-style:italic;font-size:.82rem;color:var(--grey3);}
+.ey-dash{width:28px;height:1px;background:var(--grey3);}
+.ey-tag{font-size:.7rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--grey);}
+.sec-title{font-family:'DM Serif Display',serif;font-size:clamp(1.9rem,3.2vw,3rem);line-height:1.1;color:var(--white);margin-bottom:14px;}
+.sec-title em{font-style:italic;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.28);}
+.sec-sub{color:var(--grey);font-size:.94rem;line-height:1.75;max-width:460px;}
+
+/* FEATURES */
+#features{background:var(--black);}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:60px;border:1px solid var(--border);border-radius:22px;overflow:hidden;background:var(--border);}
+.feat-card{background:var(--black2);padding:34px 30px;position:relative;overflow:hidden;transition:background .25s;}
+.feat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s;}
+.feat-card:hover{background:var(--black3);}
+.feat-card:hover::after{opacity:1;}
+.fc-num{font-family:'DM Serif Display',serif;font-style:italic;font-size:.76rem;color:var(--grey3);margin-bottom:18px;display:block;}
+.fc-icon{width:42px;height:42px;border-radius:11px;background:var(--black4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:16px;}
+.fc-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--white);margin-bottom:8px;}
+.fc-desc{color:var(--grey);font-size:.84rem;line-height:1.65;}
+
+/* WHY */
+#why{background:var(--black2);}
+.why-layout{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;}
+.why-list{display:flex;flex-direction:column;margin-top:44px;}
+.why-item{display:flex;gap:18px;align-items:flex-start;padding:22px 0;border-bottom:1px solid var(--border);transition:padding-left .22s;}
+.why-item:first-child{border-top:1px solid var(--border);}
+.why-item:hover{padding-left:8px;}
+.wi-num{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.9rem;color:var(--black5);line-height:1;min-width:38px;transition:color .22s;}
+.why-item:hover .wi-num{color:var(--grey3);}
+.wi-text h4{font-family:'DM Serif Display',serif;font-size:.97rem;color:var(--white);margin-bottom:5px;}
+.wi-text p{color:var(--grey);font-size:.84rem;line-height:1.6;}
+.why-panel{background:var(--black3);border:1px solid var(--border2);border-radius:22px;padding:36px;position:sticky;top:108px;}
+.wp-lbl{font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--grey2);margin-bottom:24px;}
+.bar-rows{display:flex;flex-direction:column;gap:16px;}
+.bar-row{display:flex;align-items:center;gap:12px;}
+.b-lbl{font-size:.78rem;color:var(--grey);font-weight:500;width:76px;text-align:right;}
+.b-track{flex:1;height:5px;border-radius:999px;background:var(--black4);overflow:hidden;}
+.b-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--white),rgba(255,255,255,.45));animation:growBar 1.6s cubic-bezier(.22,.8,.25,1) both;}
+@keyframes growBar{from{width:0!important;}}
+.b-val{font-family:'DM Serif Display',serif;font-size:.86rem;color:var(--white);width:34px;}
+.divider{height:1px;background:var(--border);margin:24px 0;}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:7px;}
+.t-tag{padding:5px 13px;border-radius:999px;border:1px solid var(--border2);background:var(--black4);font-size:.76rem;font-weight:500;color:rgba(255,255,255,.45);transition:border-color .2s,color .2s;}
+.t-tag:hover{border-color:rgba(255,255,255,.22);color:rgba(255,255,255,.8);}
+
+/* WHOM */
+#whom{background:var(--black);}
+.whom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px;}
+.whom-card{background:var(--black2);border:1px solid var(--border);border-radius:18px;padding:34px 26px;transition:border-color .25s,transform .25s,background .25s;}
+.whom-card:hover{border-color:rgba(255,255,255,.14);transform:translateY(-6px);background:var(--black3);}
+.wc-icon{width:48px;height:48px;border-radius:13px;background:var(--black3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:18px;}
+.whom-card h4{font-family:'DM Serif Display',serif;font-size:1.02rem;color:var(--white);margin-bottom:8px;}
+.whom-card p{color:var(--grey);font-size:.83rem;line-height:1.65;}
+
+/* CONTACT */
+#contact{background:var(--black2);}
+.contact-layout{display:grid;grid-template-columns:1fr 1.5fr;gap:72px;align-items:start;}
+.c-left p{color:var(--grey);line-height:1.75;margin-top:14px;margin-bottom:36px;font-size:.93rem;}
+.c-detail{display:flex;align-items:center;gap:13px;color:var(--grey);font-size:.86rem;margin-bottom:13px;}
+.cd-icon{width:34px;height:34px;border-radius:9px;background:var(--black3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.form-card{background:var(--black3);border:1px solid var(--border2);border-radius:22px;padding:40px 36px;}
+.form-title{font-family:'DM Serif Display',serif;font-size:1.55rem;color:var(--white);margin-bottom:28px;}
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;font-size:.7rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--grey2);margin-bottom:7px;}
+.form-group input,.form-group textarea{width:100%;background:var(--black4);border:1px solid var(--border2);border-radius:11px;padding:13px 16px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s,box-shadow .2s;resize:vertical;}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--grey2);}
+.form-group input:focus,.form-group textarea:focus{border-color:rgba(255,255,255,.24);box-shadow:0 0 0 3px rgba(255,255,255,.04);}
+.form-group input.error,.form-group textarea.error{border-color:rgba(255,90,90,.45)!important;}
+.error-msg{color:rgba(255,120,120,.75);font-size:.76rem;margin-top:5px;display:none;font-weight:500;}
+.error-msg.visible{display:block;}
+.submit-btn{width:100%;padding:15px;background:var(--white);color:var(--black);border:none;border-radius:999px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:background .2s,transform .2s,box-shadow .2s;margin-top:6px;}
+.submit-btn:hover{background:var(--white2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,.08);}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* LOADER */
+.loader-overlay{display:none;position:fixed;inset:0;z-index:999;background:rgba(10,10,10,.94);backdrop-filter:blur(10px);align-items:center;justify-content:center;flex-direction:column;gap:18px;}
+.loader-overlay.active{display:flex;}
+.loader-ring{width:52px;height:52px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--white);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader-text{font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--grey);font-weight:600;}
+
+/* DIALOG */
+.dialog-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(10,10,10,.96);backdrop-filter:blur(16px);align-items:center;justify-content:center;}
+.dialog-overlay.active{display:flex;}
+.dialog-box{background:var(--black3);border:1px solid var(--border2);border-radius:22px;padding:50px 42px;max-width:380px;width:90%;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6);animation:dlgIn .35s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes dlgIn{from{transform:scale(.72);opacity:0;}to{transform:scale(1);opacity:1;}}
+.dlg-icon{width:60px;height:60px;border-radius:50%;background:var(--white);color:var(--black);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 22px;font-weight:700;}
+.dlg-title{font-family:'DM Serif Display',serif;font-size:1.75rem;color:var(--white);margin-bottom:10px;}
+.dlg-msg{color:var(--grey);line-height:1.7;margin-bottom:28px;font-size:.88rem;}
+.dlg-close{background:var(--white);color:var(--black);border:none;padding:12px 34px;border-radius:999px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:background .2s,transform .2s;}
+.dlg-close:hover{background:var(--white2);transform:scale(1.03);}
+
+/* FOOTER */
+footer{position:relative;z-index:2;background:var(--black);border-top:1px solid var(--border);padding:36px 60px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.footer-logo{display:flex;align-items:center;gap:9px;font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--white);text-decoration:none;}
+.footer-logo-box{width:26px;height:26px;border-radius:7px;background:var(--white);color:var(--black);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.footer-copy{color:var(--grey2);font-size:.78rem;}
+.footer-tag{font-size:.68rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--grey2);}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:14px 22px;}.nav-links,.nav-cta{display:none;}
+  .hero{flex-direction:column;padding:100px 22px 60px;min-height:auto;gap:44px;}
+  .hero-right{justify-content:center;}
+  .hero-card{width:320px;}
+  .feat-grid,.whom-grid{grid-template-columns:1fr;}
+  .feat-grid{border-radius:16px;}
+  .why-layout,.contact-layout{grid-template-columns:1fr;}
+  .section-inner{padding:70px 22px;}
+  .stats-strip{flex-direction:column;}
+  .stat-item{border-right:none;border-bottom:1px solid var(--border);}
+  footer{padding:26px 22px;flex-direction:column;text-align:center;}
+}
+@media(max-width:600px){.whom-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-box">R</div>
+    <span>Remindly</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#whom">For You</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get In Touch</a>
+</nav>
+
+<!-- HERO -->
+<section style="position:relative;z-index:2;">
+<div class="hero">
+  <div class="hero-left">
+    <div class="eyebrow-row">
+      <div class="ey-line"></div>
+      <span class="ey-text">Now on Google Play</span>
+      <div class="ey-dot"></div>
+    </div>
+    <h1>
+      <span class="h1-solid">Never</span>
+      <span class="h1-outline">Miss</span>
+      <span class="h1-solid">Anything.</span>
+    </h1>
+    <p class="hero-desc">Smart reminders for tasks, bills, birthdays, medicines &amp; more. One app — total peace of mind.</p>
+    <div class="hero-btns">
+      <a href="#features" class="btn-w">Explore Features</a>
+      <a href="#contact" class="btn-g">Contact Us</a>
+    </div>
+    <div class="pill-row">
+      <div class="pill"><span class="pill-dot" style="background:#3b82f6;"></span>Tasks</div>
+      <div class="pill"><span class="pill-dot" style="background:#ef4444;"></span>Events</div>
+      <div class="pill"><span class="pill-dot" style="background:#22c55e;"></span>Reminders</div>
+      <div class="pill"><span class="pill-dot" style="background:#f59e0b;"></span>Medicines</div>
+      <div class="pill"><span class="pill-dot" style="background:#8b5cf6;"></span>Bills</div>
+      <div class="pill"><span class="pill-dot" style="background:#ec4899;"></span>Birthdays</div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-card-wrap">
+      <div class="hero-card">
+        <div class="card-header">
+          <div class="card-lbl">Today's Reminders</div>
+          <div class="card-title">Tuesday, 20 May</div>
+          <div class="card-sub">4 reminders pending</div>
+        </div>
+        <div class="card-body">
+          <div class="card-item"><div class="ci-icon">💊</div><div class="ci-text"><div class="ci-name">Morning Medicine</div><div class="ci-meta">8:00 AM · Daily</div></div><div class="ci-check done">✓</div></div>
+          <div class="card-item"><div class="ci-icon">💳</div><div class="ci-text"><div class="ci-name">Pay Electricity Bill</div><div class="ci-meta">Due Today · ₹1,240</div></div><div class="ci-check done">✓</div></div>
+          <div class="card-item"><div class="ci-icon">🎂</div><div class="ci-text"><div class="ci-name">Priya's Birthday</div><div class="ci-meta">Today · Don't forget!</div></div><div class="ci-check"></div></div>
+          <div class="card-item"><div class="ci-icon">✅</div><div class="ci-text"><div class="ci-name">Team Meeting</div><div class="ci-meta">3:00 PM · Work</div></div><div class="ci-check"></div></div>
+          <div class="card-item"><div class="ci-icon">🔔</div><div class="ci-text"><div class="ci-name">Evening Walk</div><div class="ci-meta">6:30 PM · Health</div></div><div class="ci-check"></div></div>
+        </div>
+        <div class="card-glow"></div>
+      </div>
+      <div class="notif">🔔 Reminder: Pay Electricity Bill</div>
+      <div class="float-badge"><div class="fb-num">6+</div><div class="fb-lbl">Categories</div></div>
+      <div class="star" style="top:28px;right:-32px;font-size:1.1rem;animation-delay:0s;">✦</div>
+      <div class="star" style="top:130px;right:-40px;font-size:.75rem;animation-delay:.9s;">✦</div>
+      <div class="star" style="bottom:110px;left:-38px;font-size:.85rem;animation-delay:.45s;">✦</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    <div class="m-item">Tasks <span class="m-sep">✦</span></div><div class="m-item">Events <span class="m-sep">✦</span></div><div class="m-item">Reminders <span class="m-sep">✦</span></div><div class="m-item">Medicines <span class="m-sep">✦</span></div><div class="m-item">Bills <span class="m-sep">✦</span></div><div class="m-item">Birthdays <span class="m-sep">✦</span></div><div class="m-item">Stay Organized <span class="m-sep">✦</span></div><div class="m-item">Stay Stress‑Free <span class="m-sep">✦</span></div><div class="m-item">Never Miss Anything <span class="m-sep">✦</span></div>
+    <div class="m-item">Tasks <span class="m-sep">✦</span></div><div class="m-item">Events <span class="m-sep">✦</span></div><div class="m-item">Reminders <span class="m-sep">✦</span></div><div class="m-item">Medicines <span class="m-sep">✦</span></div><div class="m-item">Bills <span class="m-sep">✦</span></div><div class="m-item">Birthdays <span class="m-sep">✦</span></div><div class="m-item">Stay Organized <span class="m-sep">✦</span></div><div class="m-item">Stay Stress‑Free <span class="m-sep">✦</span></div><div class="m-item">Never Miss Anything <span class="m-sep">✦</span></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item"><div class="stat-val">6+</div><div class="stat-lbl">Reminder Types</div></div>
+  <div class="stat-item"><div class="stat-val">100%</div><div class="stat-lbl">Offline Ready</div></div>
+  <div class="stat-item"><div class="stat-val">0</div><div class="stat-lbl">Missed Alerts</div></div>
+  <div class="stat-item"><div class="stat-val">Free</div><div class="stat-lbl">To Download</div></div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="ey-row"><span class="ey-num">01</span><div class="ey-dash"></div><span class="ey-tag">What We Offer</span></div>
+    <h2 class="sec-title">Powerful features to<br><em>keep you on track</em></h2>
+    <p class="sec-sub">From daily to-dos to monthly bills — everything important, always on your radar.</p>
+    <div class="feat-grid">
+      <div class="feat-card"><span class="fc-num">01</span><div class="fc-icon">✅</div><div class="fc-title">Task Management</div><div class="fc-desc">Create, organise and complete tasks effortlessly. Never let an important to-do slip through the cracks again.</div></div>
+      <div class="feat-card"><span class="fc-num">02</span><div class="fc-icon">📅</div><div class="fc-title">Event Reminders</div><div class="fc-desc">Schedule upcoming events with smart notifications so you're always prepared ahead of time.</div></div>
+      <div class="feat-card"><span class="fc-num">03</span><div class="fc-icon">🔔</div><div class="fc-title">Smart Reminders</div><div class="fc-desc">Set one-time or recurring reminders for anything. Flexible scheduling built around your life.</div></div>
+      <div class="feat-card"><span class="fc-num">04</span><div class="fc-icon">💊</div><div class="fc-title">Medicine Tracker</div><div class="fc-desc">Never forget a dose. Set daily medicine reminders and track your health routine with ease.</div></div>
+      <div class="feat-card"><span class="fc-num">05</span><div class="fc-icon">💳</div><div class="fc-title">Bill &amp; Payment Alerts</div><div class="fc-desc">Get timely alerts before bills are due. Avoid late fees and keep your finances stress-free.</div></div>
+      <div class="feat-card"><span class="fc-num">06</span><div class="fc-icon">🎂</div><div class="fc-title">Birthday Reminders</div><div class="fc-desc">Celebrate every birthday on time. Add loved ones and get reminded in advance automatically.</div></div>
+      <div class="feat-card"><span class="fc-num">07</span><div class="fc-icon">🗂️</div><div class="fc-title">Category Organiser</div><div class="fc-desc">Keep all reminders neatly categorised. Find what you need in seconds without any clutter.</div></div>
+      <div class="feat-card"><span class="fc-num">08</span><div class="fc-icon">🔁</div><div class="fc-title">Recurring Schedules</div><div class="fc-desc">Set daily, weekly or monthly repeat cycles for routine tasks. Set once, never forget again.</div></div>
+      <div class="feat-card"><span class="fc-num">09</span><div class="fc-icon">⚡</div><div class="fc-title">Instant Notifications</div><div class="fc-desc">Reliable, on-time push notifications that make sure you always act at exactly the right moment.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="section-inner">
+    <div class="why-layout">
+      <div>
+        <div class="ey-row"><span class="ey-num">02</span><div class="ey-dash"></div><span class="ey-tag">Why Remindly</span></div>
+        <h2 class="sec-title">Your life deserves<br><em>smarter reminders</em></h2>
+        <p class="sec-sub">Simple enough for everyone, powerful enough for everything.</p>
+        <div class="why-list">
+          <div class="why-item"><div class="wi-num">01</div><div class="wi-text"><h4>Simple &amp; Intuitive</h4><p>No complicated setup. Open the app and start setting reminders within seconds.</p></div></div>
+          <div class="why-item"><div class="wi-num">02</div><div class="wi-text"><h4>All-in-One Solution</h4><p>Tasks, bills, medicines, birthdays — everything managed in one clean, minimal app.</p></div></div>
+          <div class="why-item"><div class="wi-num">03</div><div class="wi-text"><h4>Reliable Notifications</h4><p>Alerts that actually fire on time, every time — even with battery optimisation active.</p></div></div>
+          <div class="why-item"><div class="wi-num">04</div><div class="wi-text"><h4>Lightweight &amp; Offline</h4><p>No internet required. Runs smoothly on all Android devices without draining your battery.</p></div></div>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="wp-lbl">App Reliability Score</div>
+        <div class="bar-rows">
+          <div class="bar-row"><span class="b-lbl">Reminders</span><div class="b-track"><div class="b-fill" style="width:99%;animation-delay:0s"></div></div><span class="b-val">99%</span></div>
+          <div class="bar-row"><span class="b-lbl">Ease of Use</span><div class="b-track"><div class="b-fill" style="width:97%;animation-delay:.15s"></div></div><span class="b-val">97%</span></div>
+          <div class="bar-row"><span class="b-lbl">Performance</span><div class="b-track"><div class="b-fill" style="width:95%;animation-delay:.3s"></div></div><span class="b-val">95%</span></div>
+          <div class="bar-row"><span class="b-lbl">Design</span><div class="b-track"><div class="b-fill" style="width:93%;animation-delay:.45s"></div></div><span class="b-val">93%</span></div>
+          <div class="bar-row"><span class="b-lbl">Coverage</span><div class="b-track"><div class="b-fill" style="width:96%;animation-delay:.6s"></div></div><span class="b-val">96%</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="wp-lbl">Reminder Categories</div>
+        <div class="tag-cloud">
+          <span class="t-tag">Tasks</span><span class="t-tag">Events</span><span class="t-tag">Medicines</span><span class="t-tag">Bills</span><span class="t-tag">Birthdays</span><span class="t-tag">Custom</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHOM -->
+<section id="whom">
+  <div class="section-inner">
+    <div class="ey-row"><span class="ey-num">03</span><div class="ey-dash"></div><span class="ey-tag">Perfect For</span></div>
+    <h2 class="sec-title">Built for every<br><em>kind of person</em></h2>
+    <p class="sec-sub">Whether you're a busy professional, a student or caring for your family — Remindly fits naturally.</p>
+    <div class="whom-grid">
+      <div class="whom-card"><div class="wc-icon">💼</div><h4>Busy Professionals</h4><p>Juggle meetings, deadlines and tasks without letting anything slip through the cracks.</p></div>
+      <div class="whom-card"><div class="wc-icon">🎓</div><h4>Students</h4><p>Track assignments, exam dates and study sessions with ease and clarity.</p></div>
+      <div class="whom-card"><div class="wc-icon">👨‍👩‍👧</div><h4>Families</h4><p>Never forget a birthday, school event or family appointment again.</p></div>
+      <div class="whom-card"><div class="wc-icon">💊</div><h4>Health-Conscious</h4><p>Stay on top of medicines, doctor visits and wellness routines every day.</p></div>
+      <div class="whom-card"><div class="wc-icon">💰</div><h4>Finance Managers</h4><p>Track bill due dates and payment schedules to avoid late charges every month.</p></div>
+      <div class="whom-card"><div class="wc-icon">🧘</div><h4>Everyone</h4><p>Anyone who wants less stress and a more organised, peaceful daily life.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-inner">
+    <div class="contact-layout">
+      <div class="c-left">
+        <div class="ey-row"><span class="ey-num">04</span><div class="ey-dash"></div><span class="ey-tag">Get In Touch</span></div>
+        <h2 class="sec-title">We'd love to<br><em>hear from you</em></h2>
+        <p>Have questions, feedback or feature requests? Fill out the form and we'll get back to you soon.</p>
+        <div class="c-detail"><div class="cd-icon">📱</div><span>Available on Google Play Store</span></div>
+        <div class="c-detail"><div class="cd-icon">📧</div><span>familyreminder0@gmail.com</span></div>
+        <div class="c-detail"><div class="cd-icon">🏙️</div><span>Surat, Gujarat, India</span></div>
+        <div class="c-detail"><div class="cd-icon">💬</div><span>Stay Organized · Stay Stress-Free</span></div>
+      </div>
+      <div class="form-card">
+        <div class="form-title">Send a Message</div>
+        <div id="contactForm">
+          <div class="form-group"><label for="username">Your Name</label><input type="text" id="username" placeholder="e.g. Rahul Sharma"/><div class="error-msg" id="username-err">Please enter your name.</div></div>
+          <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" placeholder="e.g. rahul@email.com"/><div class="error-msg" id="email-err">Please enter a valid email address.</div></div>
+          <div class="form-group"><label for="query">Your Message</label><textarea id="query" rows="5" placeholder="Write your message, feedback or question here..."></textarea><div class="error-msg" id="query-err">Please write your message (at least 10 characters).</div></div>
+          <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Send Message →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo"><div class="footer-logo-box">🔔</div>Remindly</a>
+  <div class="footer-copy">© 2026 Remindly. All rights reserved.</div>
+  <div class="footer-tag">Never · Miss · Anything</div>
+</footer>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loaderOverlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Sending your message...</div>
+</div>
+
+<!-- DIALOG -->
+<div class="dialog-overlay" id="dialogOverlay">
+  <div class="dialog-box">
+    <div class="dlg-icon">✓</div>
+    <div class="dlg-title">Message Sent!</div>
+    <div class="dlg-msg">Thank you for reaching out.<br>We'll reply to your email soon.</div>
+    <button class="dlg-close" onclick="closeDialog()">Got It</button>
+  </div>
+</div>
+
+<script>
+const cur=document.getElementById('cur'),curRing=document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curRing.style.left=rx+'px';curRing.style.top=ry+'px';requestAnimationFrame(animRing);})();
+
+function validateEmail(e){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+function setError(f,e,s){const fi=document.getElementById(f),er=document.getElementById(e);s?(fi.classList.add('error'),er.classList.add('visible')):(fi.classList.remove('error'),er.classList.remove('visible'));}
+['username','email','query'].forEach(id=>{document.getElementById(id).addEventListener('input',function(){this.classList.remove('error');const e=document.getElementById(id+'-err');if(e)e.classList.remove('visible');});});
+function handleSubmit(){
+  const u=document.getElementById('username').value.trim(),em=document.getElementById('email').value.trim(),q=document.getElementById('query').value.trim();
+  let v=true;
+  if(!u){setError('username','username-err',true);v=false;}else setError('username','username-err',false);
+  if(!em||!validateEmail(em)){setError('email','email-err',true);v=false;}else setError('email','email-err',false);
+  if(!q||q.length<10){setError('query','query-err',true);v=false;}else setError('query','query-err',false);
+  if(!v)return;
+  document.getElementById('loaderOverlay').classList.add('active');
+  document.getElementById('submitBtn').disabled=true;
+  setTimeout(()=>{
+    document.getElementById('loaderOverlay').classList.remove('active');
+    document.getElementById('dialogOverlay').classList.add('active');
+    document.getElementById('username').value='';document.getElementById('email').value='';document.getElementById('query').value='';
+    document.getElementById('submitBtn').disabled=false;
+  },4000);
+}
+function closeDialog(){document.getElementById('dialogOverlay').classList.remove('active');}
+</script>
+</body>
+</html>
